@@ -5,7 +5,7 @@
 int pir = 0;
 int ldr = 0;
 int white_bright = 255;       // default brightness for white (0-255)
-int buzz_disable = 0;         // change to 0 to switch on initial buzzer
+int buzz_disable = 0;         // change to 1 to switch off initial buzzer
 
 CRGBArray<NUM_LEDS> leds;
 
@@ -31,7 +31,8 @@ void loop() {
          leds[i].setRGB(0, 0, 0);              // set default colour or off
       }
       pir = digitalRead(12);                   // check PIR
-      ldr = analogRead(7);                     // read light sensor
+      ldr = analogRead(7);                     // read light sensor (0 = very dark, 1023 = very bright)
+                                               //      50-150 is usually a suitable threshold
       if (pir == 1){                           // If motion detected
         digitalWrite(13, HIGH);                // PIR LED ON
         delay(100);                            // Delay so when dark the LED will flash on for 0.1s
@@ -43,11 +44,10 @@ void loop() {
       if (pir == 1 && ldr <= 50 ) {            // if someone there AND dark(ish) with case
         digitalWrite(13, LOW);                 // Don't need PIR LED on now
         for(int i=0; i<NUM_LEDS; i++){
-            leds[i].setRGB(white_bright, white_bright, white_bright);     // half-bright white
-            //leds[i].setRGB(255, 255, 255);   // full-bright white sometimes gives PIR false-positives
-        }                                      // depends on LED position, PIR orientation and case location
+            leds[i].setRGB(white_bright, white_bright, white_bright);
+        }
         FastLED.show();
-        delay(18000);                          // lights on for about 20 seconds
+        delay(18000);                          // lights on for about 18 seconds
 
         for(int j=white_bright; j>-1; j--){ 
            for(int i=0; i<NUM_LEDS; i++){
@@ -59,10 +59,9 @@ void loop() {
 
         FastLED.clear();                       // reset LEDs to 0,0,0
         FastLED.show();                        // lights off
-        //delay(2000);                         // don't really need a pause here but can help with PIR fps
       }
       else {
         FastLED.show();                        // display current LED settings
-        delay(500);                            // otherwise poll read PIR at 2 Hertz
+        delay(500);                            // otherwise poll PIR sensor at 2 Hertz
       }
 }
